@@ -1,0 +1,108 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-ng-key-value-store
+  namespace: stress-test
+  labels:
+    app: stress-ng
+    env: stress-test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: stress-ng
+      env: stress-test
+  template:
+    metadata:
+      labels:
+        app: stress-ng
+        env: stress-test
+      name: stress-ng
+    spec:
+      containers:
+      - command:
+        - /apps/entrypoint.sh
+        env:
+        - name: STRESSWORKERS
+          value: "1"
+        - name: MEMPERSTRESS
+          value: 2g
+        - name: TIMEOUT
+          value: 600s
+        # high-cpu-mem, key-value-store, password-encryption, low-latency
+        - name: STRESSPROFILE
+          value: key-value-store
+        # number of times to execute the stress test before exiting
+        # -1 infinite
+        - name: CYCLES
+          value: "12"
+        # random pause between cycles (1 to N)
+        - name: RANDCYCLESPAUSE
+          value: "5"
+        image: quay.io/wcaban/stress-ng:0.1.2
+        #imagePullPolicy: Always
+        name: stress-ng
+        resources:
+          requests:
+            memory: 1G
+            cpu: 500m
+          # limits:
+          #   cpu: 1000m
+          #   memory: 2.5Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          # privileged: true
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
+            # add:
+            # - SYS_ADMIN
+          seccompProfile:
+            type: RuntimeDefault
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: kube-api-access
+          readOnly: true
+      restartPolicy: Always
+      serviceAccount: stress-ng
+      serviceAccountName: stress-ng
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      # stay bound to the node for 5 mins after node is in not-ready state
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      # stay bound to the node for 5 mins after node is in unreachable state 
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+      volumes:
+      - name: kube-api-access
+        projected:
+          defaultMode: 420
+          sources:
+          - serviceAccountToken:
+              expirationSeconds: 3607
+              path: token
+          - configMap:
+              items:
+              - key: ca.crt
+                path: ca.crt
+              name: kube-root-ca.crt
+          - downwardAPI:
+              items:
+              - fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+                path: namespace
+          - configMap:
+              items:
+              - key: service-ca.crt
+                path: service-ca.crt
+              name: openshift-service-ca.crt

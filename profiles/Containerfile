@@ -1,0 +1,20 @@
+FROM quay.io/fedora/fedora
+
+RUN dnf -y update \
+    && dnf install --setopt=tsflags=nodocs -y \    
+    less jq \
+    procps-ng \
+    stress-ng \
+    && dnf clean all \
+    && rm -fr /var/cache/dnf
+
+COPY ./scripts/entrypoint.sh /apps/entrypoint.sh
+
+LABEL io.k8s.display-name="Stress Test" \
+    io.k8s.description="stress tool" \
+    io.openshift.tags="stress-ng"
+
+ENTRYPOINT bash -c "sleep infinity"
+
+# Note: To run this container with podman
+# podman run -tid --rm quay.io/wcaban/stress-ng:latest /bin/bash
