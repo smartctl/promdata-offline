@@ -1,6 +1,6 @@
 # Prometheus with offline metrics
 
-## Capturing metrics
+## Obtaining tsdb raw metrics for offline interaction
 
 Execute the capturing script from a CLI already authenticated to access the cluster
 
@@ -9,7 +9,7 @@ Execute the capturing script from a CLI already authenticated to access the clus
 ./dump-prometheus-4hrs.sh
 ```
 
-## Using Offline Prometheus for interacting with metrics
+## Using Offline Prometheus for interacting with raw metrics
 
 ```bash
 # Create empty prometheus configuration file
@@ -74,14 +74,6 @@ podman run -tid --rm -p 9000:9000/tcp \
     curl "http://${HOSTNAME}:9000/api/v1/query?query=${PROMQL}&time=${END_TIME}"
     ```
 
-## Additional Information
-
-### Aditional Tools
-- Convert unix timestamp: https://www.epochconverter.com
-
-
 ### Credits
-The original sources for the utils:
-* [script to dump of the cluster Prometheus data](https://github.com/openshift/runbooks/blob/master/alerts/cluster-kube-apiserver-operator/ExtremelyHighIndividualControlPlaneCPU.md)
-* Based on documentation from https://access.redhat.com/solutions/5482971
 
+See [CREDITS.md](CREDITS.md)
