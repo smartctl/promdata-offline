@@ -1,18 +1,15 @@
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: stress-ng-high-cpu-mem
+  name: stress-ng-key-value-store
   namespace: stress-test
   labels:
     app: stress-ng
     env: stress-test
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: stress-ng
-      env: stress-test
+  replicas: 2
+  parallelism: 3
   template:
     metadata:
       labels:
@@ -32,7 +29,7 @@ spec:
           value: 300s
         # high-cpu-mem, key-value-store, password-encryption, low-latency
         - name: STRESSPROFILE
-          value: high-cpu-mem
+          value: key-value-store
         # number of times to execute the stress test before exiting
         # -1 infinite
         - name: CYCLES
@@ -67,7 +64,7 @@ spec:
         - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
           name: kube-api-access
           readOnly: true
-      restartPolicy: Always
+      restartPolicy: OnFailure
       serviceAccount: stress-ng
       serviceAccountName: stress-ng
       terminationGracePeriodSeconds: 30
