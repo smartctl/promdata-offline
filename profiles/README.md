@@ -1,25 +1,41 @@
+# Workload Profiles
 
-## Load Generation
+## Building the stress-ng container
 
-- Using `kube-burner`
-```bash
-kube-burner ocp node-density --gc --qps 100 --timeout 20m
+Preparing a Fedora 38
 
-kube-burner ocp node-density-heavy --gc --qps 100 --timeout 20m
+- Preparing a Fedora build machine
+    ```bash
+    # install dependencies
+    dnf -y install podman jq
 
-kube-burner ocp cluster-density --iterations 3 --gc --qps 100 --timeout 20m
+    ```
+- Preparing a Fedora OpenShift client machine.
+    Download OpenShift `oc` CLI from the [mirror](https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/)
+    ```bash
+    # download the OpenShift client (assuming Linux on x86)
+    curl -OL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+    # This includes the oc and kubectl CLI
+    tar -xzf openshift-client-linux.tar.gz
+    ```
 
-kube-burner ocp cluster-density-v2 --iterations 1 --gc --qps 100 --timeout 20m
+## Load Generation with `kube-burner`
 
-kube-burner ocp cluster-density-v2 --iterations 3 --gc --qps 100 --timeout 30m
-```
+- Example of using `kube-burner` to generate load on a clusters (examples from kube-burner documentation)
 
-# Total number of series
+    ```bash
+    kube-burner ocp node-density --gc --qps 100 --timeout 20m
 
-```bash
-# Number of tsdb entries per Prometheus instance
-sum by (pod) (prometheus_tsdb_head_series)
+    kube-burner ocp node-density-heavy --gc --qps 100 --timeout 20m
 
-# Total number of tsdb entries across Prometheus instaces
-openshift:prometheus_tsdb_head_series:sum
-```
+    kube-burner ocp cluster-density --iterations 3 --gc --qps 100 --timeout 20m
+
+    kube-burner ocp cluster-density-v2 --iterations 1 --gc --qps 100 --timeout 20m
+
+    kube-burner ocp cluster-density-v2 --iterations 3 --gc --qps 100 --timeout 30m
+    ```
+
+
+## CREDITS
+
+Each directory containing code or tools from external sources has a CREDITS.md file.
